@@ -1,0 +1,294 @@
+services:
+  hub:
+    image: hub:latest
+    container_name: hub_service
+    ports:
+      - "3050:8080"
+    environment:
+      - MONGO_URI=mongodb://dev:dev_pass@mongo_service:27017/mydb
+      - HTTP_BIND=0.0.0.0:8080
+      - USER_SERVICE_URL=http://user_service:8080
+      - SHOP_SERVICE_URL=http://shop_service:8080
+      - LANG_SERVICE_URL=http://lang_service:8080
+      - CONTENT_SERVICE_URL=http://content_service:8080
+      - TENANT_SERVICE_URL=http://tenant_service:8080
+      - ASSET_SERVICE_URL=http://asset_service:8080
+      - ANALYTICS_SERVICE_URL=http://analytics_service:8080
+      - URL_FRONT=http://localhost:3030
+      - URL_FRONT_DEV=http://localhost:3000
+      - NATS_URL=nats://nats_service:4222
+      - MONGO_DATABASE=mydb
+      - SECRET_KEY=my_secret
+      - MINIO_URL=http://minio:9000
+      - MINIO_ACCESS_KEY=minio_access
+      - MINIO_SECRET_KEY=minio_secret
+    depends_on:
+      - user
+      - shop
+      - mongo
+      - redis
+      - lang
+      - minio
+      - nats
+    networks:
+      - app_network
+
+  user:
+    image: user:latest
+    container_name: user_service
+    ports:
+      - "4001:8080"
+    environment:
+      - MONGO_URI=mongodb://user:dev_pass@mongo_service:27017/user
+      - URL_FRONT=http://localhost:8080
+      - URL_FRONT_DEV=http://localhost:5173
+      - NATS_URL=nats://nats_service:4222
+      - MONGO_DATABASE=user
+      - SECRET_KEY=my_secret
+      - HTTP_BIND=0.0.0.0:8080
+      - REDIS_URI=redis://redis_service:6379
+      - CATALOGS_PATH=https://raw.githubusercontent.com/moziu4/catalogs/main/user-messages
+    depends_on:
+      - redis
+      - nats
+    networks:
+      - app_network
+
+  shop:
+    image: shop:latest
+    container_name: shop_service
+    ports:
+      - "4002:8080"
+    environment:
+      - MONGO_URI=mongodb://shop:dev_pass@mongo_service:27017/shop
+      - HTTP_BIND=0.0.0.0:8080
+      - URL_FRONT=http://localhost:8080
+      - URL_FRONT_DEV=http://localhost:5173
+      - NATS_URL=nats://nats_service:4222
+      - MONGO_DATABASE=shop
+      - SECRET_KEY=my_secret
+      - REDIS_URI=redis://redis_service:6379
+    depends_on:
+      - redis
+      - nats
+
+    networks:
+      - app_network
+
+  lang:
+    image: lang:latest
+    container_name: lang_service
+    ports:
+      - "4003:8080"
+    environment:
+      - MONGO_URI=mongodb://lang:dev_pass@mongo_service:27017/lang
+      - HTTP_BIND=0.0.0.0:8080
+      - URL_FRONT=http://localhost:8080
+      - URL_FRONT_DEV=http://localhost:5173
+      - NATS_URL=nats://nats_service:4222
+      - MONGO_DATABASE=lang
+      - SECRET_KEY=my_secret
+      - REDIS_URI=redis://redis_service:6379
+      - TRANSLATIONS_DIR=/mnt/json
+      - CATALOGS_PATH=https://raw.githubusercontent.com/moziu4/catalogs/main/lang-messages
+
+    depends_on:
+      - redis
+      - nats
+
+    volumes:
+      - c:\Users\alorenzo\Proyectos-2\lang-messages:/mnt/json
+    networks:
+      - app_network
+
+  asset:
+    image: asset:latest
+    container_name: asset_service
+    ports:
+      - "4004:8080"
+    environment:
+      - HTTP_BIND=0.0.0.0:8080
+      - URL_FRONT=http://localhost:8080
+      - URL_FRONT_DEV=http://localhost:5173
+      - MONGO_URI=mongodb://asset:dev_pass@mongo_service:27017/asset
+      - NATS_URL=nats://nats_service:4222
+      - SECRET_KEY=SecretPassword
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=minio_access
+      - MINIO_SECRET_KEY=minio_secret
+      - MINIO_REGION=us-east-1
+      - MINIO_BUCKET=images
+      - MINIO_BUCKET_PRODUCTS=products
+      - MINIO_BUCKET_IMAGES=images
+      - MINIO_BUCKET_CONTENTS=contents
+    depends_on:
+      - redis
+      - nats
+      - minio
+
+    networks:
+      - app_network
+
+  content:
+    image: content:latest
+    container_name: content_service
+    ports:
+      - "4005:8080"
+    environment:
+      - MONGO_URI=mongodb://content:dev_pass@mongo_service:27017/content
+      - HTTP_BIND=0.0.0.0:8080
+      - URL_FRONT=http://localhost:8080
+      - URL_FRONT_DEV=http://localhost:5173
+      - NATS_URL=nats://nats_service:4222
+      - MONGO_DATABASE=content
+      - SECRET_KEY=my_secret
+      - REDIS_URI=redis://redis_service:6379
+      - CATALOGS_PATH_DEFAULT_PAGES=https://raw.githubusercontent.com/moziu4/catalogs/main/content-messages/default-pages
+      - CATALOGS_PATH_BLOCKS=https://raw.githubusercontent.com/moziu4/catalogs/main/content-messages/blocks
+      - CATALOGS_PATH_LANGUAGES=https://raw.githubusercontent.com/moziu4/catalogs/main/lang-messages
+      - CATALOGS_PATH_PAGES=https://raw.githubusercontent.com/moziu4/catalogs/main/content-messages/pages
+
+    depends_on:
+      - redis
+      - nats
+
+    networks:
+      - app_network
+
+  tenant:
+    image: tenant:latest
+    container_name: tenant_service
+    ports:
+      - "4006:8080"
+    environment:
+      - MONGO_URI=mongodb://tenant:dev_pass@mongo_service:27017/tenant
+      - HTTP_BIND=0.0.0.0:8080
+      - URL_FRONT=http://localhost:8080
+      - URL_FRONT_DEV=http://localhost:5173
+      - NATS_URL=nats://nats_service:4222
+      - MONGO_DATABASE=tenant
+      - SECRET_KEY=my_secret
+      - REDIS_URI=redis://redis_service:6379
+
+    depends_on:
+      - redis
+      - nats
+
+    networks:
+      - app_network
+
+
+  analytics:
+    image: analytics:latest
+    container_name: analytics_service
+    ports:
+      - "4007:8080"
+    environment:
+      - CLICKHOUSE_URL=http://clickhouse:8123
+      - CLICKHOUSE_USER=admin
+      - CLICKHOUSE_PASSWORD=admin_pass
+      - CLICKHOUSE_DATABASE=events
+      - HTTP_BIND=0.0.0.0:8080
+      - URL_FRONT=http://localhost:8080
+      - URL_FRONT_DEV=http://localhost:5173
+      - NATS_URL=nats://nats_service:4222
+      - SECRET_KEY=my_secret
+      - REDIS_URI=redis://redis_service:6379
+
+    depends_on:
+      - redis
+      - nats
+      - clickhouse
+
+    networks:
+      - app_network
+
+
+  mongo:
+    image: mongo:7.0
+    container_name: mongo_service
+    ports:
+      - "47017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin_pass
+      - MONGO_INITDB_DATABASE=mydb
+    volumes:
+      - mongo_data:/data/db
+
+    networks:
+      - app_network
+
+  redis:
+    image: redis:7
+    container_name: redis_service
+    ports:
+      - "6379:6379"
+    networks:
+      - app_network
+
+
+  nats:
+    build: ./broker
+    container_name: nats_service
+    restart: always
+    ports:
+      - "4222:4222"
+      - "6222:6222" # Puerto para clientes
+      - "8222:8222" # Interfaz web de administración (opcional)
+    volumes:
+      - nats_data:/var/lib/nats
+
+    networks:
+      - app_network
+
+
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio_service
+    ports:
+      - "9000:9000"
+      - "9001:9001" # Puerto del dashboard
+    environment:
+      - MINIO_ACCESS_KEY=minio_access
+      - MINIO_SECRET_KEY=minio_secret
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - app_network
+
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    ports:
+      - "8123:8123"
+      - "9004:9000"
+    environment:
+      - CLICKHOUSE_DB=events
+      - CLICKHOUSE_USER=admin
+      - CLICKHOUSE_PASSWORD=admin_pass
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    networks:
+      - app_network
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local
+  minio_data:
+    driver: local
+  nats_data:
+    driver: local
+  clickhouse_data:
+    driver: local
