@@ -1,6 +1,6 @@
 services:
   hub:
-    image: hub:latest
+    image: moziu4/hub:latest
     container_name: hub_service
     ports:
       - "3050:8080"
@@ -12,13 +12,15 @@ services:
       - LANG_SERVICE_URL=http://lang_service:8080
       - CONTENT_SERVICE_URL=http://content_service:8080
       - TENANT_SERVICE_URL=http://tenant_service:8080
-      - ASSET_SERVICE_URL=http://asset_service:8080
+      - ASSETS_SERVICE_URL=http://asset_service:8080
       - ANALYTICS_SERVICE_URL=http://analytics_service:8080
+      - CONSTRUCTOR_SERVICE_URL=http://constructor_service:8080
       - URL_FRONT=http://localhost:3030
       - URL_FRONT_DEV=http://localhost:3000
       - NATS_URL=nats://nats_service:4222
       - MONGO_DATABASE=mydb
       - SECRET_KEY=my_secret
+      - REDIS_URI=redis://redis_service:6379
       - MINIO_URL=http://minio:9000
       - MINIO_ACCESS_KEY=minio_access
       - MINIO_SECRET_KEY=minio_secret
@@ -34,7 +36,7 @@ services:
       - app_network
 
   user:
-    image: user:latest
+    image: moziu4/user:latest
     container_name: user_service
     ports:
       - "4001:8080"
@@ -54,29 +56,29 @@ services:
     networks:
       - app_network
 
-  shop:
-    image: shop:latest
-    container_name: shop_service
-    ports:
-      - "4002:8080"
-    environment:
-      - MONGO_URI=mongodb://shop:dev_pass@mongo_service:27017/shop
-      - HTTP_BIND=0.0.0.0:8080
-      - URL_FRONT=http://localhost:8080
-      - URL_FRONT_DEV=http://localhost:5173
-      - NATS_URL=nats://nats_service:4222
-      - MONGO_DATABASE=shop
-      - SECRET_KEY=my_secret
-      - REDIS_URI=redis://redis_service:6379
-    depends_on:
-      - redis
-      - nats
-
-    networks:
-      - app_network
+#  shop:
+#    image: shop:latest
+#    container_name: shop_service
+#    ports:
+#      - "4002:8080"
+#    environment:
+#      - MONGO_URI=mongodb://shop:dev_pass@mongo_service:27017/shop
+#      - HTTP_BIND=0.0.0.0:8080
+#      - URL_FRONT=http://localhost:8080
+#      - URL_FRONT_DEV=http://localhost:5173
+#      - NATS_URL=nats://nats_service:4222
+#      - MONGO_DATABASE=shop
+#      - SECRET_KEY=my_secret
+#      - REDIS_URI=redis://redis_service:6379
+#    depends_on:
+#      - redis
+#      - nats
+#
+#    networks:
+#      - app_network
 
   lang:
-    image: lang:latest
+    image: moziu4/lang:latest
     container_name: lang_service
     ports:
       - "4003:8080"
@@ -102,7 +104,7 @@ services:
       - app_network
 
   asset:
-    image: asset:latest
+    image: moziu4/asset:latest
     container_name: asset_service
     ports:
       - "4004:8080"
@@ -130,7 +132,7 @@ services:
       - app_network
 
   content:
-    image: content:latest
+    image: moziu4/content:latest
     container_name: content_service
     ports:
       - "4005:8080"
@@ -156,7 +158,7 @@ services:
       - app_network
 
   tenant:
-    image: tenant:latest
+    image: moziu4/tenant:latest
     container_name: tenant_service
     ports:
       - "4006:8080"
@@ -179,7 +181,7 @@ services:
 
 
   analytics:
-    image: analytics:latest
+    image: moziu4/analytics:latest
     container_name: analytics_service
     ports:
       - "4007:8080"
@@ -203,6 +205,37 @@ services:
     networks:
       - app_network
 
+
+  constructor:
+    image: moziu4/constructor:latest
+    container_name: constructor_service
+    ports:
+      - "4008:8080"
+    environment:
+      - USER_SERVICE_URL=http://user_service:8080
+      - SHOP_SERVICE_URL=http://shop_service:8080
+      - LANG_SERVICE_URL=http://lang_service:8080
+      - CONTENT_SERVICE_URL=http://content_service:8080
+      - TENANT_SERVICE_URL=http://tenant_service:8080
+      - ASSETS_SERVICE_URL=http://asset_service:8080
+      - ANALYTICS_SERVICE_URL=http://analytics_service:8080
+      - NATS_URL=nats://nats_service:4222
+      - REDIS_URI=redis://redis_service:6379
+      - URL_FRONT=http://localhost:3030
+      - URL_FRONT_DEV=http://localhost:3000
+      - HTTP_BIND=0.0.0.0:8080
+
+    depends_on:
+      - user
+      - shop
+      - mongo
+      - redis
+      - lang
+      - minio
+      - nats
+
+    networks:
+      - app_network
 
   mongo:
     image: mongo:7.0
