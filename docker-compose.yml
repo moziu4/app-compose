@@ -1,6 +1,6 @@
 services:
   hub:
-    image: moziu4/hub:latest
+    image: moziu4/hub:${VER_HUB}
     container_name: hub_service
     ports:
       - "3050:8080"
@@ -36,7 +36,7 @@ services:
       - app_network
 
   user:
-    image: moziu4/user:latest
+    image: moziu4/user:${VER_USER}
     container_name: user_service
     ports:
       - "4001:8080"
@@ -56,29 +56,9 @@ services:
     networks:
       - app_network
 
-#  shop:
-#    image: shop:latest
-#    container_name: shop_service
-#    ports:
-#      - "4002:8080"
-#    environment:
-#      - MONGO_URI=mongodb://shop:dev_pass@mongo_service:27017/shop
-#      - HTTP_BIND=0.0.0.0:8080
-#      - URL_FRONT=http://localhost:8080
-#      - URL_FRONT_DEV=http://localhost:5173
-#      - NATS_URL=nats://nats_service:4222
-#      - MONGO_DATABASE=shop
-#      - SECRET_KEY=my_secret
-#      - REDIS_URI=redis://redis_service:6379
-#    depends_on:
-#      - redis
-#      - nats
-#
-#    networks:
-#      - app_network
 
   lang:
-    image: moziu4/lang:latest
+    image: moziu4/lang:${VER_LANG}
     container_name: lang_service
     ports:
       - "4003:8080"
@@ -104,7 +84,7 @@ services:
       - app_network
 
   asset:
-    image: moziu4/asset:latest
+    image: moziu4/asset:${VER_ASSET}
     container_name: asset_service
     ports:
       - "4004:8080"
@@ -131,34 +111,9 @@ services:
     networks:
       - app_network
 
-  content:
-    image: moziu4/content:latest
-    container_name: content_service
-    ports:
-      - "4005:8080"
-    environment:
-      - MONGO_URI=mongodb://content:dev_pass@mongo_service:27017/content
-      - HTTP_BIND=0.0.0.0:8080
-      - URL_FRONT=http://localhost:8080
-      - URL_FRONT_DEV=http://localhost:5173
-      - NATS_URL=nats://nats_service:4222
-      - MONGO_DATABASE=content
-      - SECRET_KEY=my_secret
-      - REDIS_URI=redis://redis_service:6379
-      - CATALOGS_PATH_DEFAULT_PAGES=https://raw.githubusercontent.com/moziu4/catalogs/main/content-messages/default-pages
-      - CATALOGS_PATH_BLOCKS=https://raw.githubusercontent.com/moziu4/catalogs/main/content-messages/blocks
-      - CATALOGS_PATH_LANGUAGES=https://raw.githubusercontent.com/moziu4/catalogs/main/lang-messages
-      - CATALOGS_PATH_PAGES=https://raw.githubusercontent.com/moziu4/catalogs/main/content-messages/pages
-
-    depends_on:
-      - redis
-      - nats
-
-    networks:
-      - app_network
 
   tenant:
-    image: moziu4/tenant:latest
+    image: moziu4/tenant:${VER_TENANT}
     container_name: tenant_service
     ports:
       - "4006:8080"
@@ -179,66 +134,37 @@ services:
     networks:
       - app_network
 
+#
+#  analytics:
+#    image: moziu4/analytics:${VER_ANALYTICS}
+#    container_name: analytics_service
+#    ports:
+#      - "4007:8080"
+#    environment:
+#      - CLICKHOUSE_URL=http://clickhouse:8123
+#      - CLICKHOUSE_USER=admin
+#      - CLICKHOUSE_PASSWORD=admin_pass
+#      - CLICKHOUSE_DATABASE=events
+#      - HTTP_BIND=0.0.0.0:8080
+#      - URL_FRONT=http://localhost:8080
+#      - URL_FRONT_DEV=http://localhost:5173
+#      - NATS_URL=nats://nats_service:4222
+#      - SECRET_KEY=my_secret
+#      - REDIS_URI=redis://redis_service:6379
+#
+#    depends_on:
+#      - redis
+#      - nats
+#      - clickhouse
+#
+#    networks:
+#      - app_network
 
-  analytics:
-    image: moziu4/analytics:latest
-    container_name: analytics_service
-    ports:
-      - "4007:8080"
-    environment:
-      - CLICKHOUSE_URL=http://clickhouse:8123
-      - CLICKHOUSE_USER=admin
-      - CLICKHOUSE_PASSWORD=admin_pass
-      - CLICKHOUSE_DATABASE=events
-      - HTTP_BIND=0.0.0.0:8080
-      - URL_FRONT=http://localhost:8080
-      - URL_FRONT_DEV=http://localhost:5173
-      - NATS_URL=nats://nats_service:4222
-      - SECRET_KEY=my_secret
-      - REDIS_URI=redis://redis_service:6379
-
-    depends_on:
-      - redis
-      - nats
-      - clickhouse
-
-    networks:
-      - app_network
 
 
-  constructor:
-    image: moziu4/constructor:latest
-    container_name: constructor_service
-    ports:
-      - "4008:8080"
-    environment:
-      - USER_SERVICE_URL=http://user_service:8080
-      - SHOP_SERVICE_URL=http://shop_service:8080
-      - LANG_SERVICE_URL=http://lang_service:8080
-      - CONTENT_SERVICE_URL=http://content_service:8080
-      - TENANT_SERVICE_URL=http://tenant_service:8080
-      - ASSETS_SERVICE_URL=http://asset_service:8080
-      - ANALYTICS_SERVICE_URL=http://analytics_service:8080
-      - NATS_URL=nats://nats_service:4222
-      - REDIS_URI=redis://redis_service:6379
-      - URL_FRONT=http://localhost:3030
-      - URL_FRONT_DEV=http://localhost:3000
-      - HTTP_BIND=0.0.0.0:8080
-
-    depends_on:
-      - user
-      - shop
-      - mongo
-      - redis
-      - lang
-      - minio
-      - nats
-
-    networks:
-      - app_network
 
   mongo:
-    image: mongo:7.0
+    image: mongo:${VER_MONGO:-7.0}
     container_name: mongo_service
     ports:
       - "47017:27017"
@@ -253,7 +179,7 @@ services:
       - app_network
 
   redis:
-    image: redis:7
+    image: redis:${VER_REDIS:-7}
     container_name: redis_service
     ports:
       - "6379:6379"
@@ -278,7 +204,7 @@ services:
 
 
   minio:
-    image: minio/minio:latest
+    image: minio/minio:${VER_MINIO:-latest}
     container_name: minio_service
     ports:
       - "9000:9000"
@@ -294,7 +220,7 @@ services:
 
 
   clickhouse:
-    image: clickhouse/clickhouse-server:latest
+    image: clickhouse/clickhouse-server:${VER_CLICKHOUSE:-latest}
     container_name: clickhouse
     ports:
       - "8123:8123"
