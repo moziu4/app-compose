@@ -26,7 +26,6 @@ services:
       - MINIO_SECRET_KEY=minio_secret
     depends_on:
       - user
-      - shop
       - mongo
       - redis
       - lang
@@ -160,11 +159,53 @@ services:
 #    networks:
 #      - app_network
 
+  ia:
+    image: moziu4/ai:${VER_IA}
+    container_name: ia_service
+    ports:
+      - "4008:8080"
+    environment:
+      - MONGO_URI=mongodb://ia:dev_pass@mongo_service:27017/ia
+      - HTTP_BIND=0.0.0.0:8080
+      - URL_FRONT=http://localhost:8080
+      - URL_FRONT_DEV=http://localhost:5173
+      - NATS_URL=nats://nats_service:4222
+      - MONGO_DATABASE=ia
+      - SECRET_KEY=my_secret
+      - REDIS_URI=redis://redis_service:6379
+      - LLM_PROVIDER=openai
+      - LLM_API_KEY=your-api-key-here
+      - LLM_MODEL=gemini-3.5-flash-lite
+      - LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
+      - LLM_TIMEOUT=30.0
+      - EMBEDDING_PROVIDER=openai
+      - EMBEDDING_API_KEY=your-api-key-here
+      - EMBEDDING_MODEL=gemini-embedding-001
+      - EMBEDDING_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
+      - CHUNK_SIZE=500
+      - CHUNK_OVERLAP=50
+      - DB_PROVIDER=mongo
+      - MONGO_DB_NAME=ai
+      - MONGO_CONVERSATIONS_COLLECTION=conversations
+      - MONGO_VECTORS_COLLECTION=vector_documents
+      - MONGO_MAX_CONNECTIONS=10
+      - MONGO_MIN_CONNECTIONS=1
+      - CHAT_MAX_HISTORY_MESSAGES=20
+      - VECTOR_SEARCH_INDEX_NAME=vector_index
+      - VECTOR_DIMENSION=1536
+      - VECTOR_SIMILARITY_METRIC=cosine
 
+    depends_on:
+      - redis
+      - nats
+      - mongo
+
+    networks:
+      - app_network
 
 
   mongo:
-    image: mongo:${VER_MONGO:-7.0}
+    image: mongo:7.0
     container_name: mongo_service
     ports:
       - "47017:27017"
@@ -174,12 +215,13 @@ services:
       - MONGO_INITDB_DATABASE=mydb
     volumes:
       - mongo_data:/data/db
+      - ./mongo-init.js:/tmp/mongo-init.js:ro
 
     networks:
       - app_network
 
   redis:
-    image: redis:${VER_REDIS:-7}
+    image: redis:7
     container_name: redis_service
     ports:
       - "6379:6379"
@@ -204,7 +246,7 @@ services:
 
 
   minio:
-    image: minio/minio:${VER_MINIO:-latest}
+    image: minio/minio:latest
     container_name: minio_service
     ports:
       - "9000:9000"
@@ -220,7 +262,7 @@ services:
 
 
   clickhouse:
-    image: clickhouse/clickhouse-server:${VER_CLICKHOUSE:-latest}
+    image: clickhouse/clickhouse-server:latest
     container_name: clickhouse
     ports:
       - "8123:8123"
