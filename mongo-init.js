@@ -8,7 +8,6 @@ db.createUser({
         {role: "readWrite", db: "user"}
     ]
 });
-
 db.createCollection("auth");
 
 
@@ -41,5 +40,27 @@ db.createUser({
     pwd: "dev_pass",
     roles: [
         {role: "readWrite", db: "asset"}
+    ]
+});
+
+
+db = db.getSiblingDB("migration");
+
+db.createUser({
+    user: "migration",
+    pwd: "dev_pass",
+    roles: [
+        {role: "readWrite", db: "migration"}
+    ]
+});
+
+
+db = db.getSiblingDB("billing");
+
+db.createUser({
+    user: "billing",
+    pwd: "dev_pass",
+    roles: [
+        {role: "readWrite", db: "billing"}
     ]
 });

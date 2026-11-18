@@ -204,6 +204,55 @@ services:
       - app_network
 
 
+  migration:
+    image: moziu4/migration:${VER_MIGRATION}
+    container_name: migration_service
+    ports:
+      - "4009:8080"
+    environment:
+      - MONGO_URI=mongodb://migration:dev_pass@mongo_service:27017/migration
+      - HTTP_BIND=0.0.0.0:8080
+      - URL_FRONT=http://localhost:8080
+      - URL_FRONT_DEV=http://localhost:5173
+      - NATS_URL=nats://nats_service:4222
+      - MONGO_DATABASE=migration
+      - SECRET_KEY=my_secret
+      - REDIS_URI=redis://redis_service:6379
+
+
+    depends_on:
+      - redis
+      - nats
+      - mongo
+
+    networks:
+      - app_network
+
+  billing:
+    image: moziu4/billing:${VER_BILLING}
+    container_name: billing_service
+    ports:
+      - "4010:8080"
+    environment:
+      - MONGO_URI=mongodb://billing:dev_pass@mongo_service:27017/billing
+      - HTTP_BIND=0.0.0.0:8080
+      - URL_FRONT=http://localhost:8080
+      - URL_FRONT_DEV=http://localhost:5173
+      - NATS_URL=nats://nats_service:4222
+      - MONGO_DATABASE=billing
+      - SECRET_KEY=my_secret
+      - REDIS_URI=redis://redis_service:6379
+
+
+    depends_on:
+      - redis
+      - nats
+      - mongo
+
+    networks:
+      - app_network
+
+
   mongo:
     image: mongo:7.0
     container_name: mongo_service
